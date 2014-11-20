@@ -33,7 +33,7 @@
 
 #include <iostream>
 #include "ofxFontStash.h"
-
+#include "ofTrueTypeFont.cpp"
 std::string searchAndReplace(std::string &s,
 							 std::string toReplace,
 							 std::string replaceWith);
@@ -69,7 +69,7 @@ bool ofxFontStash::setup( string fontFile, float lineHeightPercent , int texDime
 		stash = sth_create(texDimension,texDimension, createMipMaps, intraCharPadding, dpiScale);
 		stash->doKerning = 0; //kerning disabled by default
 		stash->charSpacing = 0.0; //spacing neutral by default
-		stashFontID = sth_add_font( stash, ofToDataPath( fontFile ).c_str() );
+		stashFontID = sth_add_font( stash, winFontPathByName(fontFile).c_str() ); //ofToDataPath( fontFile );
 		if ( stashFontID != 0){
 			ofLogNotice("ofxFontStash", "loaded font '%s' in texture (%d x %d)", fontFile.c_str(), texDimension, texDimension );
 			return true;
