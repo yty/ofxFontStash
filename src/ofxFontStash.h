@@ -34,7 +34,7 @@
 #ifndef ofxFontStash_h
 #define ofxFontStash_h
 
-#define OFX_FONT_STASH_LINE_HEIGHT_MULT	0.8
+#define OFX_FONT_STASH_LINE_HEIGHT_MULT	0.9
 
 #include "ofMain.h"
 #include "ofUTF8.h"
@@ -53,7 +53,18 @@ class ofxFontStash{
 		~ofxFontStash();
 	
 		//call this to set your font file (.ttf, etc)
-		bool setup( string fontFile, float lineHeightPercent = 1.0f, int textureDimension = 512);
+		bool setup( string fontFile,
+				   float lineHeightPercent = 1.0f,
+				   int textureDimension = 512,	//texture atlas size, must be PowerOfTwo (512, 1024, 2048, etc)
+				   bool createMipMaps = false,	//create mipmaps for the texture atlasas; if you do
+												//you will need some extra padding between the characters
+												//in the altases, otherwise the mipmaps will leak when
+												//using smaller sizes, and characters will have white
+												//outlines around them
+				   int intraCharPadding = 0,	//padding around each character in the texture atlas;
+												//wastes texture space, but makes mipmaps work.
+				   float dpiScale = 1.0f		//character texture is rendered internally at this scale
+				   );
 
 		//will draw text in one line, ignoring "\n"'s
 		void draw( string text, float size, float x, float y);
@@ -64,7 +75,10 @@ class ofxFontStash{
 		//fits text in a column of a certain width
 		//if you only want to find out the bbox size, send in dontDraw=true
 		//numLines will return the number of lines this has been split in
-		ofRectangle drawMultiLineColumn( string &text, float fontSize, float x, float y, float columnWidth, int &numLines, bool dontDraw = false, int maxLines = 0, bool giveBackNewLinedText = false );
+		ofRectangle drawMultiLineColumn( string &text, float fontSize, float x, float y,
+											float columnWidth, int &numLines, bool dontDraw = false,
+											int maxLines = 0, bool giveBackNewLinedText = false,
+											bool * wordsWereTruncated = NULL );
 
 		//if the text has newlines, it will be treated as if was called into drawMultiLine()
 		ofRectangle getBBox( string text, float size, float x, float y );
@@ -79,8 +93,36 @@ class ofxFontStash{
 
 		void setLineHeight(float percent);
 
+		void setKerning(bool enabled); //use ttf supplied kerning info at draw time or not
+		bool getKerning();
+
+		sth_stash* getStash(){return stash;}; //you probably dont need to mess with that
+		float getDpiScale(){return dpiScale;}
+		void setLodBias(float bias); //only makes sense when using mipmaps!
+
+        // ofTrueTypeFont parity methods
+        bool loadFont(string filename, int fontsize, float lineHeightPercent = 1.0f, int textureDimension = 512);
+        bool isLoaded();
+    
+        void setSize(int fontsize);
+        int getSize();
+    
+        float getLineHeight();
+        float getSpaceSize();
+
+		float getCharacterSpacing(){return stash->charSpacing;}
+		void setCharacterSpacing(float spacing){stash->charSpacing = spacing;}
+    
+        float stringWidth(const string& s);
+        float stringHeight(const string& s);
+    
+        ofRectangle getStringBoundingBox(const string& s, float x, float y);
+    
+        void drawString(const string& s, float x, float y);
+    
 	private:
-		
+
+		int					extraPadding; //used for mipmaps
 		float				lineHeight; // as percent, 1.0 would be normal
 		struct sth_stash*	stash;
 		int					stashFontID;
@@ -88,6 +130,10 @@ class ofxFontStash{
 
 		//fill in a string
 		string walkAndFill(ofUTF8Ptr being, ofUTF8Ptr & iter, ofUTF8Ptr end);
+    
+        // ofTrueTypeFont parity attributes
+        int					fontSize;
+		float				dpiScale;
 };
 
 

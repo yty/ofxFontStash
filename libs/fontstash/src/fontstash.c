@@ -21,6 +21,8 @@
 // Oriol Ferrer Mesià made tiny modifications to make this render text flipped vertically
 // Also changed the include ifdefs
 
+// 31st July 2014 - Danoli3 - Daniel Rosser made minor macro modifictions to support Android and another iPhone Target.
+
 /*
  #ifdef __MACOSX__
  #include <OpenGL/gl.h>
@@ -31,18 +33,18 @@
 
 //oriol replacing platform includes to work better in OpenFrameworks
 //from http://stackoverflow.com/questions/5919996/how-to-detect-reliably-mac-os-x-ios-linux-windows-in-c-preprocessor
-#ifdef _WIN32
+#if defined(_WIN32) || defined(_WIN64)
 	//#include <gl/gl.h> //oriol making it work for win32
 	#include "GL\glew.h"
 	#include "GL\wglew.h"
-#elif _WIN64
-#include <gl/gl.h>
+#elif __ANDROID__   // Danoli3 - Adding Android target as it is supported with OpenGLES
+#include <GLES/gl.h>
+#include <GLES/glext.h>
 #elif __APPLE__
 #include "TargetConditionals.h"
-#if (TARGET_OS_IPHONE)
+#if defined(__ANDROID__) || defined(TARGET_OS_IPHONE_SIMULATOR) || (TARGET_IPHONE_SIMULATOR == 1) || (TARGET_OS_IPHONE == 1) || defined(TARGET_IPHONE)
 #import <OpenGLES/ES1/gl.h>
-#elif (TARGET_IPHONE_SIMULATOR)
-#import <OpenGLES/ES1/gl.h>
+#import <OpenGLES/ES1/glext.h>
 #elif (TARGET_OS_MAC)
 #include <OpenGL/gl.h>
 #else
@@ -64,6 +66,7 @@
 
 /* @rlyeh: removed STB_TRUETYPE_IMPLENTATION. We link it externally */
 #include "stb_truetype.h"
+#include "fontstash.h"
 
 #define HASH_LUT_SIZE 256
 #define MAX_ROWS 128
@@ -140,18 +143,6 @@ struct sth_texture
 	struct sth_texture* next;
 };
 
-struct sth_stash
-{
-	int tw,th;
-	float itw,ith;
-	GLubyte *empty_data;
-	struct sth_texture* tt_textures;
-	struct sth_texture* bm_textures;
-	struct sth_font* fonts;
-	int drawing;
-};
-
-
 
 // Copyright (c) 2008-2009 Bjoern Hoehrmann <bjoern@hoehrmann.de>
 // See http://bjoern.hoehrmann.de/utf-8/decoder/dfa/ for details.
@@ -188,8 +179,8 @@ static unsigned int decutf8(unsigned int* state, unsigned int* codep, unsigned i
 
 
 
-struct sth_stash* sth_create(int cachew, int cacheh)
-{
+struct sth_stash* sth_create(int cachew, int cacheh, int createMipmaps, int charPadding, float dpiScale){
+
 	struct sth_stash* stash = NULL;
 	GLubyte* empty_data = NULL;
 	struct sth_texture* texture = NULL;
@@ -216,6 +207,7 @@ struct sth_stash* sth_create(int cachew, int cacheh)
 	stash->ith = 1.0f/cacheh;
 	stash->empty_data = empty_data;
 	stash->tt_textures = texture;
+	stash->dpiScale = dpiScale;
 	glGenTextures(1, &texture->id);
 	if (!texture->id) goto error;
 	glBindTexture(GL_TEXTURE_2D, texture->id);
@@ -223,6 +215,10 @@ struct sth_stash* sth_create(int cachew, int cacheh)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
+	stash->hasMipMap = createMipmaps;
+	stash->padding = charPadding;
+	stash->charSpacing = 0.0f;
+	stash->doKerning = 0;
 	return stash;
 	
 error:
@@ -246,6 +242,7 @@ int sth_add_font_from_memory(struct sth_stash* stash, unsigned char* buffer)
 	for (i = 0; i < HASH_LUT_SIZE; ++i) fnt->lut[i] = -1;
 
 	fnt->data = buffer;
+
 
 	// Init stb_truetype
 	if (!stbtt_InitFont(&fnt->font, fnt->data, 0)) goto error;
@@ -430,13 +427,14 @@ static struct sth_glyph* get_glyph(struct sth_stash* stash, struct sth_font* fnt
 	if (fnt->type == BMFONT) return 0;
 	
 	// For truetype fonts: create this glyph.
-	scale = stbtt_ScaleForPixelHeight(&fnt->font, size);
+	scale = stash->dpiScale * stbtt_ScaleForPixelHeight(&fnt->font, size);
 	g = stbtt_FindGlyphIndex(&fnt->font, codepoint);
 	if(!g) return 0; /* @rlyeh: glyph not found, ie, arab chars */
 	stbtt_GetGlyphHMetrics(&fnt->font, g, &advance, &lsb);
 	stbtt_GetGlyphBitmapBox(&fnt->font, g, scale,scale, &x0,&y0,&x1,&y1);
-	gw = x1-x0;
-	gh = y1-y0;
+
+	gw = x1-x0 + stash->padding;
+	gh = y1-y0 + stash->padding;
 	
 	// Check if glyph is larger than maximum texture size
 	if (gw >= stash->tw || gh >= stash->th)
@@ -492,6 +490,8 @@ static struct sth_glyph* get_glyph(struct sth_stash* stash, struct sth_font* fnt
 						glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, stash->tw,stash->th, 0, GL_ALPHA, GL_UNSIGNED_BYTE, stash->empty_data);
 						glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 						glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+						//glGenerateMipmap(GL_TEXTURE_2D);
 					}
 					continue;
 				}
@@ -543,6 +543,18 @@ static struct sth_glyph* get_glyph(struct sth_stash* stash, struct sth_font* fnt
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);	//oriol trying to get rid of halos when rotating font
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);	//
 		glTexSubImage2D(GL_TEXTURE_2D, 0, glyph->x0,glyph->y0, gw,gh, GL_ALPHA,GL_UNSIGNED_BYTE,bmp);
+		if(stash->hasMipMap > 0){
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, 8); //TODO check for hw support!
+#if defined(__ANDROID__) || defined(TARGET_OS_IPHONE_SIMULATOR) || (TARGET_IPHONE_SIMULATOR == 1) || (TARGET_OS_IPHONE == 1) || defined(TARGET_IPHONE)
+				// OpenGLES 1.0 does not support the following.
+#else
+//			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_LOD_BIAS, -0.0); //shoot for sharper test
+//			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 3); // pick mipmap level 7 or lower
+			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_LOD_BIAS, -0.0);
+			glGenerateMipmap(GL_TEXTURE_2D);
+#endif
+		}
 		free(bmp);
 	}
 	
@@ -557,14 +569,14 @@ error:
 static int get_quad(struct sth_stash* stash, struct sth_font* fnt, struct sth_glyph* glyph, short isize, float* x, float* y, struct sth_quad* q)
 {
 	int rx,ry;
-	float scale = 1.0f;
+	float scale = 1.0f ;
 
 	if (fnt->type == BMFONT) scale = isize/(glyph->size*10.0f);
 
 	rx = floorf(*x + scale * glyph->xoff);
 	//ry = floorf(*y - scale * glyph->yoff); //oriol flipped vertically to better match openFrameworks
 	ry = floorf(*y + scale * glyph->yoff);
-	
+
 	q->x0 = rx;
 	q->y0 = ry;
 	q->x1 = rx + scale * (glyph->x1 - glyph->x0);
@@ -590,6 +602,22 @@ static float* setv(float* v, float x, float y, float s, float t)
 	return v+4;
 }
 
+
+void set_lod_bias(struct sth_stash* stash, float bias){
+
+	struct sth_texture* texture = stash->tt_textures;
+	if(stash->hasMipMap > 0){
+		while (texture){
+			glEnable(GL_TEXTURE_2D);
+			glBindTexture(GL_TEXTURE_2D, texture->id);
+			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_LOD_BIAS, bias);
+			glBindTexture(GL_TEXTURE_2D, 0);
+			glDisable(GL_TEXTURE_2D);
+			texture = texture->next;
+		}
+	}
+}
+
 static void flush_draw(struct sth_stash* stash)
 {
 	struct sth_texture* texture = stash->tt_textures;
@@ -597,7 +625,10 @@ static void flush_draw(struct sth_stash* stash)
 	while (texture)
 	{
 		if (texture->nverts > 0)
-		{			
+		{
+			glPushMatrix();
+			float ss = 1.0f / stash->dpiScale;
+			glScalef(ss, ss, ss);
 			glBindTexture(GL_TEXTURE_2D, texture->id);
 			glEnable(GL_TEXTURE_2D);
 			glEnableClientState(GL_VERTEX_ARRAY);
@@ -608,6 +639,7 @@ static void flush_draw(struct sth_stash* stash)
 			glDisable(GL_TEXTURE_2D);
 			glDisableClientState(GL_VERTEX_ARRAY);
 			glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+			glPopMatrix();
 			texture->nverts = 0;
 		}
 		texture = texture->next;
@@ -675,7 +707,15 @@ void sth_draw_text(struct sth_stash* stash,
 	while(fnt != NULL && fnt->idx != idx) fnt = fnt->next;
 	if (fnt == NULL) return;
 	if (fnt->type != BMFONT && !fnt->data) return;
-	
+
+	int len = strlen(s);
+	float scale = stbtt_ScaleForPixelHeight(&fnt->font, size);
+	int c = 0;
+	float spacing = stash->charSpacing;
+	int doKerning = stash->doKerning;
+	int p = stash->padding;
+	float tw = stash->padding / (float)stash->tw;
+
 	for (; *s; ++s)
 	{
 		if (decutf8(&state, &codepoint, *(unsigned char*)s)) continue;
@@ -686,18 +726,27 @@ void sth_draw_text(struct sth_stash* stash,
 			flush_draw(stash);
 		
 		if (!get_quad(stash, fnt, glyph, isize, &x, &y, &q)) continue;
-		
+
+		int diff = 0;
+		if (c < len && doKerning > 0){
+			diff = stbtt_GetCodepointKernAdvance(&fnt->font, *(s), *(s+1));
+			//printf("diff '%c' '%c' = %d\n", *(s-1), *s, diff);
+			x += diff * scale;
+		}
+		x += scale + spacing;
+
 		v = &texture->verts[texture->nverts*4];
-		
-		v = setv(v, q.x0, q.y0, q.s0, q.t0);
-		v = setv(v, q.x1, q.y0, q.s1, q.t0);
-		v = setv(v, q.x1, q.y1, q.s1, q.t1);
 
 		v = setv(v, q.x0, q.y0, q.s0, q.t0);
-		v = setv(v, q.x1, q.y1, q.s1, q.t1);
-		v = setv(v, q.x0, q.y1, q.s0, q.t1);
+		v = setv(v, q.x1 - p, q.y0, q.s1 - tw, q.t0);
+		v = setv(v, q.x1 - p, q.y1 - p, q.s1 - tw, q.t1 - tw);
+
+		v = setv(v, q.x0, q.y0, q.s0, q.t0);
+		v = setv(v, q.x1 - p, q.y1 - p, q.s1 - tw, q.t1 - tw);
+		v = setv(v, q.x0, q.y1 - p, q.s0, q.t1 - tw);
 		
 		texture->nverts += 6;
+		c++;
 	}
 	
 	if (dx) *dx = x;
@@ -723,17 +772,32 @@ void sth_dim_text(struct sth_stash* stash,
 	while(fnt != NULL && fnt->idx != idx) fnt = fnt->next;
 	if (fnt == NULL) return;
 	if (fnt->type != BMFONT && !fnt->data) return;
-	
-	for (; *s; ++s)
-	{
+
+	int len = strlen(s);
+	float scale = stbtt_ScaleForPixelHeight(&fnt->font, size);
+	int c = 0;
+	float spacing = stash->charSpacing;
+	int doKerning = stash->doKerning;
+
+	for (; *s; ++s){
 		if (decutf8(&state, &codepoint, *(unsigned char*)s)) continue;
 		glyph = get_glyph(stash, fnt, codepoint, isize);
 		if (!glyph) continue;
 		if (!get_quad(stash, fnt, glyph, isize, &x, &y, &q)) continue;
+
+		int diff = 0;
+		if (c < len && doKerning > 0){
+			diff = stbtt_GetCodepointKernAdvance(&fnt->font, *(s), *(s+1));
+			//printf("diff '%c' '%c' = %d\n", *(s-1), *s, diff);
+			x += diff * scale + spacing;
+		}
+		x += scale + spacing;
+
 		if (q.x0 < *minx) *minx = q.x0;
 		if (q.x1 > *maxx) *maxx = q.x1;
 		if (q.y1 > *miny) *miny = q.y1;		//oriol changed "<" direction bc its flipped to fit OF
 		if (q.y0 < *maxy) *maxy = q.y0;		//idem
+		c++;
 	}
 	if (floorf(x) > *maxx) *maxx = floorf(x);
 }
