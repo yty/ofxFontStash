@@ -1,0 +1,141 @@
+<?xml version="1.0"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+	<ItemGroup>
+		<ClCompile Include="src\ofApp.cpp">
+			<Filter>src</Filter>
+		</ClCompile>
+		<ClCompile Include="src\main.cpp">
+			<Filter>src</Filter>
+		</ClCompile>
+		<ClCompile Include="src\main.cpp">
+			<Filter>src</Filter>
+		</ClCompile>
+		<ClCompile Include="src\ofApp.cpp">
+			<Filter>src</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\..\addons\ofxFontStash\src\ofxFontStash.cpp">
+			<Filter>addons\ofxFontStash\src</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\..\addons\ofxFontStash\libs\fontstash\src\fontstash.c">
+			<Filter>addons\ofxFontStash\libs\fontstash\src</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\..\addons\ofxFontStash\libs\fontstash\src\stb_truetype.c">
+			<Filter>addons\ofxFontStash\libs\fontstash\src</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\..\addons\ofxUnicode\src\ofTextConverter.cpp">
+			<Filter>addons\ofxUnicode\src</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\..\addons\ofxUnicode\src\ofUnicode.cpp">
+			<Filter>addons\ofxUnicode\src</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\..\addons\ofxUnicode\src\ofUTF8.cpp">
+			<Filter>addons\ofxUnicode\src</Filter>
+		</ClCompile>
+	</ItemGroup>
+	<ItemGroup>
+		<Filter Include="src">
+			<UniqueIdentifier>{d8376475-7454-4a24-b08a-aac121d3ad6f}</UniqueIdentifier>
+		</Filter>
+		<Filter Include="addons">
+			<UniqueIdentifier>{71834F65-F3A9-211E-73B8-DC85}</UniqueIdentifier>
+		</Filter>
+		<Filter Include="addons\ofxFontStash">
+			<UniqueIdentifier>{52833EC4-B632-6FCA-91CC-4AE6}</UniqueIdentifier>
+		</Filter>
+		<Filter Include="addons\ofxFontStash\src">
+			<UniqueIdentifier>{49A40DDC-6572-4E0A-048E-2D04}</UniqueIdentifier>
+		</Filter>
+		<Filter Include="addons\ofxFontStash\libs">
+			<UniqueIdentifier>{A8F1AC44-FC7C-BBBD-E0C9-B6EE}</UniqueIdentifier>
+		</Filter>
+		<Filter Include="addons\ofxFontStash\libs\fontstash">
+			<UniqueIdentifier>{FE13F720-8FE1-4B82-AE17-C9C7}</UniqueIdentifier>
+		</Filter>
+		<Filter Include="addons\ofxFontStash\libs\fontstash\src">
+			<UniqueIdentifier>{74A9B8C3-6ADF-F872-4DE5-3A6C}</UniqueIdentifier>
+		</Filter>
+		<Filter Include="addons\ofxUnicode">
+			<UniqueIdentifier>{CB2491AC-3023-43DF-9741-48D7}</UniqueIdentifier>
+		</Filter>
+		<Filter Include="addons\ofxUnicode\src">
+			<UniqueIdentifier>{C9A66D79-A4BA-A028-D6FA-6312}</UniqueIdentifier>
+		</Filter>
+		<Filter Include="addons\ofxUnicode\libs">
+			<UniqueIdentifier>{A667F7E1-576E-BA14-2997-A4B4}</UniqueIdentifier>
+		</Filter>
+		<Filter Include="addons\ofxUnicode\libs\utf8cpp">
+			<UniqueIdentifier>{502796D4-0698-6C4F-C3E8-BE7E}</UniqueIdentifier>
+		</Filter>
+		<Filter Include="addons\ofxUnicode\libs\utf8cpp\include">
+			<UniqueIdentifier>{26699A66-C7A5-E962-A0BC-1307}</UniqueIdentifier>
+		</Filter>
+		<Filter Include="addons\ofxUnicode\libs\utf8cpp\include\utf8">
+			<UniqueIdentifier>{66BE9A71-EB65-4D93-5B88-D353}</UniqueIdentifier>
+		</Filter>
+		<Filter Include="addons\ofxUnicode\libs\utf8cpp\src">
+			<UniqueIdentifier>{9B2E43E3-B584-B0BC-E349-4308}</UniqueIdentifier>
+		</Filter>
+		<Filter Include="addons\ofxUnicode\libs\utf8cpp\src\utf8_v2_3_1">
+			<UniqueIdentifier>{2C0E3FE5-84D9-5142-4A3B-7B23}</UniqueIdentifier>
+		</Filter>
+		<Filter Include="addons\ofxUnicode\libs\utf8cpp\src\utf8_v2_3_1\source">
+			<UniqueIdentifier>{08F75FB2-55F3-79E5-445B-EDFC}</UniqueIdentifier>
+		</Filter>
+		<Filter Include="addons\ofxUnicode\libs\utf8cpp\src\utf8_v2_3_1\source\utf8">
+			<UniqueIdentifier>{FF32AC70-6CE9-79DC-96F2-AE32}</UniqueIdentifier>
+		</Filter>
+	</ItemGroup>
+	<ItemGroup>
+		<ClInclude Include="src\ofApp.h">
+			<Filter>src</Filter>
+		</ClInclude>
+		<ClInclude Include="src\ofApp.h">
+			<Filter>src</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxFontStash\src\ofxFontStash.h">
+			<Filter>addons\ofxFontStash\src</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxFontStash\libs\fontstash\src\fontstash.h">
+			<Filter>addons\ofxFontStash\libs\fontstash\src</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxFontStash\libs\fontstash\src\stb_truetype.h">
+			<Filter>addons\ofxFontStash\libs\fontstash\src</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxUnicode\src\ofTextConverter.h">
+			<Filter>addons\ofxUnicode\src</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxUnicode\src\ofUnicode.h">
+			<Filter>addons\ofxUnicode\src</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxUnicode\src\ofUTF8.h">
+			<Filter>addons\ofxUnicode\src</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxUnicode\libs\utf8cpp\include\utf8\checked.h">
+			<Filter>addons\ofxUnicode\libs\utf8cpp\include\utf8</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxUnicode\libs\utf8cpp\include\utf8\core.h">
+			<Filter>addons\ofxUnicode\libs\utf8cpp\include\utf8</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxUnicode\libs\utf8cpp\include\utf8\unchecked.h">
+			<Filter>addons\ofxUnicode\libs\utf8cpp\include\utf8</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxUnicode\libs\utf8cpp\include\utf8.h">
+			<Filter>addons\ofxUnicode\libs\utf8cpp\include</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxUnicode\libs\utf8cpp\src\utf8_v2_3_1\source\utf8\checked.h">
+			<Filter>addons\ofxUnicode\libs\utf8cpp\src\utf8_v2_3_1\source\utf8</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxUnicode\libs\utf8cpp\src\utf8_v2_3_1\source\utf8\core.h">
+			<Filter>addons\ofxUnicode\libs\utf8cpp\src\utf8_v2_3_1\source\utf8</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxUnicode\libs\utf8cpp\src\utf8_v2_3_1\source\utf8\unchecked.h">
+			<Filter>addons\ofxUnicode\libs\utf8cpp\src\utf8_v2_3_1\source\utf8</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\addons\ofxUnicode\libs\utf8cpp\src\utf8_v2_3_1\source\utf8.h">
+			<Filter>addons\ofxUnicode\libs\utf8cpp\src\utf8_v2_3_1\source</Filter>
+		</ClInclude>
+	</ItemGroup>
+	<ItemGroup>
+		<ResourceCompile Include="icon.rc" />
+	</ItemGroup>
+</Project>
